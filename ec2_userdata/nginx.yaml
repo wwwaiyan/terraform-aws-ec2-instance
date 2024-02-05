@@ -1,0 +1,23 @@
+#cloud-config
+
+package_update: true
+package_upgrade: true
+
+packages:
+  - nginx
+  - net-tools
+
+runcmd:
+  - |
+    # Create devops user
+    sudo useradd -m -s /bin/bash devops
+    sudo usermod -aG sudo devops
+    echo "devops:devops" | sudo chpasswd
+    echo "Hello World from $(hostname -f)" > /var/www/html/index.html
+
+    # # Configure SSH
+    # sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
+    # sudo systemctl restart sshd
+    sudo apt install postgresql postgresql-contrib libpq-dev python3-dev -y
+    sudo apt install etcd haproxy -y
+    
