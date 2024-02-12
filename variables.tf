@@ -10,21 +10,12 @@ variable "ec2_instance" {
   }))
   default = [
         {
-            instance_name = "web-server-1"
+            instance_name = "app-service"
             ami                         = "ami-0c7217cdde317cfec"
-            instance_type               = "t2.micro"
+            instance_type               = "t3.large"
             associate_public_ip_address = "true"
             ec2_avail_zone           = "us-east-1a"
-            user_data                   = "./ec2_userdata/nginx.yaml"
-            pub_key_file = "~/.ssh/id_rsa.pub"
-        },
-        {
-            instance_name = "web-server-2"
-            ami                         = "ami-0c7217cdde317cfec"
-            instance_type               = "t2.micro"
-            associate_public_ip_address = "true"
-            ec2_avail_zone           = "us-east-1a"
-            user_data                   = "./ec2_userdata/nginx.yaml"
+            user_data                   = "./ec2_userdata/istioonKind.yaml"
             pub_key_file = "~/.ssh/id_rsa.pub"
         }
     ]
