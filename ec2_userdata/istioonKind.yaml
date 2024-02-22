@@ -12,6 +12,7 @@ runcmd:
     sudo useradd -m -s /bin/bash devops
     sudo usermod -aG sudo devops
     echo "devops:devops" | sudo chpasswd
+    sudo hostnamectl set-hostname kind-cluster
 
     ##setting up kubectl
     sudo snap install kubectl --classic
@@ -46,16 +47,22 @@ runcmd:
     curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.21.0/kind-linux-amd64
     chmod +x ./kind
     sudo mv ./kind /usr/local/bin/kind
-    kind create cluster --name my-cluster --config <(echo "kind: Cluster
+    kind create cluster --name svcmesh-cluster --config - <<EOF
+    kind: Cluster
     apiVersion: kind.x-k8s.io/v1alpha4
     nodes:
     - role: control-plane
     - role: worker
-    - role: worker")
+    - role: worker
+    EOF
+    mkdir  /home/devops/.kube
+    kind get kubeconfig -n svcmesh-cluster > /home/devops/.kube/config
     kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.7/config/manifests/metallb-native.yaml
 
     ##install istioctl
-    curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.20.3 TARGET_ARCH=x86_64 sh -
-    export PATH="$PATH:/home/devops/istio-1.20.3/bin"
+    cd /opt
+    curl -L https://istio.io/downloadIstio /home/devops | ISTIO_VERSION=1.20.3 TARGET_ARCH=x86_64 sh -
+    sudo chmod -R +x /opt/istio-1.20.3/
+    export PATH="$PATH:/opt/istio-1.20.3/bin"
     istioctl install -y ##with default profile
-    kubectl label namespace default istio-injection=enabled ##can change the namespace 
+    kubectl label namespace default istio-injection=enabled ##can change the namespace
