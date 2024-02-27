@@ -1,3 +1,13 @@
+variable "project_name" {
+  description = "Project Name"
+  type        = string
+  default     = "test-project"
+}
+variable "env_prefix" {
+  description = "Environment Prefix"
+  type        = string
+  default     = "test"
+}
 variable "ec2_instance" {
   type = list(object({
     instance_name               = string
@@ -10,31 +20,21 @@ variable "ec2_instance" {
   }))
   default = [
         {
-            instance_name = "app-service"
+            instance_name = "elk-testing"
             ami                         = "ami-0c7217cdde317cfec"
             instance_type               = "t3.large"
             associate_public_ip_address = "true"
             ec2_avail_zone           = "us-east-1a"
-            user_data                   = "./ec2_userdata/istioonKind.yaml"
+            user_data                   = "./userdata/elk.yaml"
             pub_key_file = "~/.ssh/id_rsa.pub"
         }
     ]
-}
-variable "project_name" {
-  description = "Project Name"
-  type        = string
-  default     = "test-project"
-}
-variable "env_prefix" {
-  description = "Environment Prefix"
-  type        = string
-  default     = "test"
 }
 
 variable "sg_name" {
   description = "Security Group Name"
   type        = string
-  default     = "test-sg"
+  default     = "elk-sg"
 }
 #ingress
 variable "ingress_rules" {
