@@ -1,12 +1,12 @@
 variable "project_name" {
   description = "Project Name"
   type        = string
-  default     = "test-project"
+  default     = "k8s-cluster"
 }
 variable "env_prefix" {
   description = "Environment Prefix"
   type        = string
-  default     = "test"
+  default     = "cka"
 }
 variable "ec2_instance" {
   type = list(object({
@@ -20,12 +20,30 @@ variable "ec2_instance" {
   }))
   default = [
         {
-            instance_name = "elk-testing"
+            instance_name = "master"
             ami                         = "ami-0c7217cdde317cfec"
-            instance_type               = "t3.large"
+            instance_type               = "t3.small"
             associate_public_ip_address = "true"
             ec2_avail_zone           = "us-east-1a"
-            user_data                   = "./userdata/elk.yaml"
+            user_data                   = "./userdata/k8s-master.yaml"
+            pub_key_file = "~/.ssh/id_rsa.pub"
+        },
+        {
+            instance_name = "worker01"
+            ami                         = "ami-0c7217cdde317cfec"
+            instance_type               = "t3.small"
+            associate_public_ip_address = "true"
+            ec2_avail_zone           = "us-east-1a"
+            user_data                   = "./userdata/k8s-worker.yaml"
+            pub_key_file = "~/.ssh/id_rsa.pub"
+        },
+        {
+            instance_name = "worker02"
+            ami                         = "ami-0c7217cdde317cfec"
+            instance_type               = "t3.small"
+            associate_public_ip_address = "true"
+            ec2_avail_zone           = "us-east-1a"
+            user_data                   = "./userdata/k8s-worker.yaml"
             pub_key_file = "~/.ssh/id_rsa.pub"
         }
     ]
@@ -34,7 +52,7 @@ variable "ec2_instance" {
 variable "sg_name" {
   description = "Security Group Name"
   type        = string
-  default     = "elk-sg"
+  default     = "k8s-sg"
 }
 #ingress
 variable "ingress_rules" {
@@ -47,9 +65,7 @@ variable "ingress_rules" {
     description = string
   }))
   default = [
-    { from_port = 22, to_port = 22, protocol = "tcp", cidr_blocks = "0.0.0.0/0", description = "ssh" },
-    { from_port = 80, to_port = 80, protocol = "tcp", cidr_blocks = "0.0.0.0/0", description = "Nginx allow" },
-    { from_port = 3000, to_port = 3000, protocol = "tcp", cidr_blocks = "0.0.0.0/0", description = "frontend" }
+    { from_port = 0, to_port = 0, protocol = "-1", cidr_blocks = "0.0.0.0/0", description = "all allow" }
   ]
 }
 #egress
