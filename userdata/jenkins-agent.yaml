@@ -1,0 +1,35 @@
+#cloud-config
+
+package_update: true
+package_upgrade: true
+
+packages:
+  - net-tools
+  - openjdk-17-jre-headless
+
+runcmd:
+  - |
+    ##Create devops user
+    sudo useradd -m -s /bin/bash devops
+    sudo usermod -aG sudo devops
+    echo "devops:devops" | sudo chpasswd
+    sudo hostnamectl set-hostname jenkins-agent
+
+    # # Configure SSH
+    # sudo sed -i 's/#PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
+    # sudo systemctl restart sshd
+
+    # Install Docker
+    sudo apt-get update -y
+    sudo apt-get install ca-certificates curl gnupg -y
+    sudo install -m 0755 -d /etc/apt/keyrings
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    sudo chmod a+r /etc/apt/keyrings/docker.gpg
+    echo \
+      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+      $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+      sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    sudo apt-get update -y
+    sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose -y
+    sudo usermod -aG docker devops
+    sudo systemctl enable --now docker

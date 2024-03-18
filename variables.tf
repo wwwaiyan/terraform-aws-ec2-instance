@@ -1,12 +1,12 @@
 variable "project_name" {
   description = "Project Name"
   type        = string
-  default     = "k8s-cluster"
+  default     = "qsl-docker-jenkins"
 }
 variable "env_prefix" {
   description = "Environment Prefix"
   type        = string
-  default     = "cka"
+  default     = "dev"
 }
 variable "ec2_instance" {
   type = list(object({
@@ -20,30 +20,21 @@ variable "ec2_instance" {
   }))
   default = [
         {
+            instance_name = "agent"
+            ami                         = "ami-0c7217cdde317cfec"
+            instance_type               = "t2.medium"
+            associate_public_ip_address = "true"
+            ec2_avail_zone           = "us-east-1a"
+            user_data                   = "./userdata/jenkins-agent.yaml"
+            pub_key_file = "~/.ssh/id_rsa.pub"
+        },
+        {
             instance_name = "master"
             ami                         = "ami-0c7217cdde317cfec"
-            instance_type               = "t3.small"
+            instance_type               = "t2.medium"
             associate_public_ip_address = "true"
             ec2_avail_zone           = "us-east-1a"
-            user_data                   = "./userdata/k8s-master.yaml"
-            pub_key_file = "~/.ssh/id_rsa.pub"
-        },
-        {
-            instance_name = "worker01"
-            ami                         = "ami-0c7217cdde317cfec"
-            instance_type               = "t3.small"
-            associate_public_ip_address = "true"
-            ec2_avail_zone           = "us-east-1a"
-            user_data                   = "./userdata/k8s-worker.yaml"
-            pub_key_file = "~/.ssh/id_rsa.pub"
-        },
-        {
-            instance_name = "worker02"
-            ami                         = "ami-0c7217cdde317cfec"
-            instance_type               = "t3.small"
-            associate_public_ip_address = "true"
-            ec2_avail_zone           = "us-east-1a"
-            user_data                   = "./userdata/k8s-worker.yaml"
+            user_data                   = "./userdata/jenkins-master.yaml"
             pub_key_file = "~/.ssh/id_rsa.pub"
         }
     ]
@@ -52,7 +43,7 @@ variable "ec2_instance" {
 variable "sg_name" {
   description = "Security Group Name"
   type        = string
-  default     = "k8s-sg"
+  default     = "jenkins-sg"
 }
 #ingress
 variable "ingress_rules" {
