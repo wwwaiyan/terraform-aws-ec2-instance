@@ -1,0 +1,16 @@
+#cloud-config
+
+packages:
+  - redis-server
+  - postgresql
+
+runcmd:
+  # Restart Redis after installation
+  - systemctl restart redis-server
+
+  # Switch to the postgres user
+  - sudo -u postgres psql -c "CREATE DATABASE app_db;"
+
+  # Create a new PostgreSQL user and grant privileges
+  - sudo -u postgres psql -c "CREATE USER db_admin WITH PASSWORD '123@wyDB';"
+  - sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE app_db TO db_admin;"

@@ -1,12 +1,12 @@
 variable "project_name" {
   description = "Project Name"
   type        = string
-  default     = "qsl-docker-jenkins"
+  default     = "voting-app-customizing"
 }
 variable "env_prefix" {
   description = "Environment Prefix"
   type        = string
-  default     = "dev"
+  default     = "managed-by-terraform"
 }
 variable "ec2_instance" {
   type = list(object({
@@ -20,21 +20,30 @@ variable "ec2_instance" {
   }))
   default = [
         {
-            instance_name = "agent"
+            instance_name = "application-host"
             ami                         = "ami-0c7217cdde317cfec"
-            instance_type               = "t2.medium"
+            instance_type               = "t2.micro"
             associate_public_ip_address = "true"
             ec2_avail_zone           = "us-east-1a"
             user_data                   = "./userdata/jenkins-agent.yaml"
             pub_key_file = "~/.ssh/id_rsa.pub"
         },
         {
-            instance_name = "master"
+            instance_name = "jenkins-master"
             ami                         = "ami-0c7217cdde317cfec"
-            instance_type               = "t2.medium"
+            instance_type               = "t2.micro"
             associate_public_ip_address = "true"
             ec2_avail_zone           = "us-east-1a"
             user_data                   = "./userdata/jenkins-master.yaml"
+            pub_key_file = "~/.ssh/id_rsa.pub"
+        },
+        {
+            instance_name = "redis-db"
+            ami                         = "ami-0c7217cdde317cfec"
+            instance_type               = "t2.micro"
+            associate_public_ip_address = "true"
+            ec2_avail_zone           = "us-east-1a"
+            user_data                   = "./userdata/redis-psql.yaml"
             pub_key_file = "~/.ssh/id_rsa.pub"
         }
     ]

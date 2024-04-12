@@ -2,7 +2,7 @@ module "vpc" {
   source             = "github.com/wwwaiyan/terraform-aws-vpc/modules/wy_vpc"
   project_name       = var.project_name
   env_prefix         = var.env_prefix
-  public_subnet_cidr = ["10.90.1.0/24"]
+  public_subnet_cidr = ["10.90.1.0/24","10.90.2.0/24"]
 }
 module "sg" {
   #this module depends on wy_vpc module
