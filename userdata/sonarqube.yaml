@@ -1,0 +1,51 @@
+#cloud-config
+
+package_update: true
+package_upgrade: true
+
+packages:
+  - openjdk-17-jre-headless
+
+runcmd:
+  - |
+    # Create Jenkins user
+    sudo useradd -m -s /bin/bash jenkins
+    sudo usermod -aG sudo jenkins
+    echo "jenkins:jenkins" | sudo chpasswd
+
+    # # Configure SSH
+    # sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
+    # sudo systemctl restart sshd
+
+    # Install Docker
+    sudo apt-get update -y
+    sudo apt-get install ca-certificates curl gnupg -y
+    sudo install -m 0755 -d /etc/apt/keyrings
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    sudo chmod a+r /etc/apt/keyrings/docker.gpg
+
+    echo \
+      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+      $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+      sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    sudo apt-get update -y
+    sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose -y
+    sudo usermod -aG docker jenkins
+
+    sudo snap install terraform --classic
+    sudo snap install aws-cli --classic
+
+    echo -e "vm.max_map_count=262144\nfs.file-max=65536" | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
+    ulimit -n 65536
+    ulimit -u 4096
+    sudo apt install posrgres unzip -y
+    sudo useradd sonaruser
+    sudo usermod -s /bin/bash sonaruser
+    echo "sonaruser:sonar" | sudo chpasswd
+    cd /opt
+    sudo wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-10.3.0.82913.zip
+    sudo unip sonarqube-10.3.0.82913.zip
+    sudo mv sonarqube-10.3.0.82913 sonarqube
+    echo -e "sonar.jdbc.username=sonar\nsonar.jdbc.password=sonar\nsonar.jdbc.url=jdbc:postgresql://localhost/sonardb" | sudo tee -a /opt/sonarqube/conf/sonar.properties
+    sudo chown -R sonaruser:sonaruser sonarqube
+    echo "sonarqube need to configure database and systemd service"

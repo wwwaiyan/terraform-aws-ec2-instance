@@ -1,12 +1,12 @@
 variable "project_name" {
   description = "Project Name"
   type        = string
-  default     = "qsl-docker-jenkins"
+  default     = "full-cicd"
 }
 variable "env_prefix" {
   description = "Environment Prefix"
   type        = string
-  default     = "dev"
+  default     = "managed-by-terraform"
 }
 variable "ec2_instance" {
   type = list(object({
@@ -20,7 +20,7 @@ variable "ec2_instance" {
   }))
   default = [
         {
-            instance_name = "agent"
+            instance_name = "Jenkins-agent"
             ami                         = "ami-0c7217cdde317cfec"
             instance_type               = "t2.medium"
             associate_public_ip_address = "true"
@@ -29,12 +29,21 @@ variable "ec2_instance" {
             pub_key_file = "~/.ssh/id_rsa.pub"
         },
         {
-            instance_name = "master"
+            instance_name = "Jenkins-master"
             ami                         = "ami-0c7217cdde317cfec"
             instance_type               = "t2.medium"
             associate_public_ip_address = "true"
             ec2_avail_zone           = "us-east-1a"
             user_data                   = "./userdata/jenkins-master.yaml"
+            pub_key_file = "~/.ssh/id_rsa.pub"
+        },
+        {
+            instance_name = "developer-laptop"
+            ami                         = "ami-0c7217cdde317cfec"
+            instance_type               = "t2.medium"
+            associate_public_ip_address = "true"
+            ec2_avail_zone           = "us-east-1a"
+            user_data                   = "./userdata/developer-laptop.yaml"
             pub_key_file = "~/.ssh/id_rsa.pub"
         }
     ]

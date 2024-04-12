@@ -1,0 +1,68 @@
+#cloud-config
+runcmd:
+  - |
+    #!/bin/bash
+    sudo hostnamectl set-hostname developer-laptop
+    sudo apt update -y && sudo apt upgrade -y
+    sudo useradd -m -s /bin/bash devops
+    sudo usermod -aG sudo devops
+    echo "devops:devops" | sudo chpasswd
+    sudo useradd -m -s /bin/bash kadaie
+    sudo usermod -aG sudo kadaie
+    echo "kadaie:kadaie" | sudo chpasswd
+    sudo addgroup code-server
+    sudo usermod -aG code-server kadaie
+    sudo usermod -aG code-server devops
+    sudo chmod -R 770 /home/kadaie
+    sudo chmod -R 770 /home/devops
+    sudo chown -R kadaie:code-server /home/kadaie
+    sudo chown -R devops:code-server /home/devops
+    sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
+    sudo systemctl restart sshd
+    sudo apt update -y && sudo apt upgrade -y
+    sudo snap install aws-cli --classic
+    sudo snap install terraform --classic
+    sudo snap install helm --classic
+    sudo snap install kubectl --classic
+    sudo snap install kubectx --classic
+    sudo snap install k9s --classic
+    sudo ln -s /snap/k9s/current/bin/k9s /snap/bin/
+    ARCH=amd64
+    PLATFORM=$(uname -s)_$ARCH
+    curl -sLO "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_$PLATFORM.tar.gz"
+    curl -sL "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_checksums.txt" | grep $PLATFORM | sha256sum --check
+    tar -xzf eksctl_$PLATFORM.tar.gz -C /tmp && rm eksctl_$PLATFORM.tar.gz
+    sudo mv /tmp/eksctl /usr/local/bin
+    echo "userdata done" >> /opt/userdata.txt
+    sudo apt-get install bash-completion
+    source /usr/share/bash-completion/bash_completion
+
+    # Install Docker
+    sudo apt-get update -y
+    sudo apt-get install ca-certificates curl gnupg -y
+    sudo install -m 0755 -d /etc/apt/keyrings
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    sudo chmod a+r /etc/apt/keyrings/docker.gpg
+    echo \
+      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+      $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+      sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    sudo apt-get update -y
+    sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose -y
+    sudo usermod -aG docker devops
+    sudo systemctl enable --now docker
+
+    #devops
+    sudo curl -fsSL https://code-server.dev/install.sh | sh
+    sudo systemctl enable --now code-server@devops
+    mkdir -p ~/.config/code-server/
+    cat << EOF > ~/.config/code-server/config.yaml
+    bind-addr: 0.0.0.0:8080
+    auth: password
+    password: devops
+    cert: false
+    EOF
+
+    sudo systemctl restart code-server@devops
+    
+    echo "cloud-init done" > /opt/cloud-init.txt
